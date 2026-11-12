@@ -13,6 +13,10 @@ spring:
     open-in-view: false
     hibernate:
       ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc.time_zone: UTC
+        type.preferred_instant_jdbc_type: TIMESTAMP
   thymeleaf:
     cache: false
 
@@ -50,8 +54,13 @@ oidc:
       previous-public-key-path: ${AS_PREVIOUS_PUBLIC_KEY_PATH:}
     seed-client:
       client-id: ${OIDC_CLIENT_ID:app-cybersecurity-33506}
-      client-secret: ${OIDC_CLIENT_SECRET}
+      client-secret: ${OIDC_CLIENT_SECRET:}
       redirect-uri: ${OIDC_REDIRECT_URI:https://localhost:8443/callback}
+    seed-users:
+      admin-username: ${SEED_ADMIN_USERNAME:admin}
+      admin-password: ${SEED_ADMIN_PASSWORD:}
+      user-username: ${SEED_USER_USERNAME:aluno}
+      user-password: ${SEED_USER_PASSWORD:}
     login:
       max-attempts: 5
       window: 5m

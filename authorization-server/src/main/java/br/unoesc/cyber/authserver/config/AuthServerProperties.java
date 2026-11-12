@@ -19,6 +19,7 @@ public record AuthServerProperties(
         List<String> scopesSupported,
         SigningKey signingKey,
         SeedClient seedClient,
+        SeedUsers seedUsers,
         Login login) {
 
     /** Chave RSA atual (assina) e, opcionalmente, a anterior (só publicada no JWKS durante a rotação). */
@@ -27,6 +28,10 @@ public record AuthServerProperties(
 
     /** Cliente cadastrado na inicialização a partir do .env. */
     public record SeedClient(String clientId, String clientSecret, String redirectUri) {
+    }
+
+    /** Usuários de demonstração (role admin e role user) criados no boot. */
+    public record SeedUsers(String adminUsername, String adminPassword, String userUsername, String userPassword) {
     }
 
     public record Login(int maxAttempts, Duration window, Duration lockout, int bcryptCost) {
