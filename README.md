@@ -45,6 +45,12 @@ Todas em [`.env.example`](.env.example). O script copia para `.env` gerando valo
 | `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET`, `OIDC_REDIRECT_URI` | cadastro do cliente (lidos pelos dois apps) |
 | `SEED_*` | usuários de demonstração (`admin` com role admin, `aluno` com role user) |
 
+## Rotação da chave de assinatura (§2.7)
+1. Exporte a pública da chave atual: `openssl pkey -in secrets/keys/signing-2026-11.pem -pubout -out secrets/keys/signing-2026-11.pub.pem`
+2. Gere a nova: `openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out secrets/keys/signing-2026-12.pem`
+3. No `.env`: `AS_SIGNING_KID=2026-12`, `AS_SIGNING_KEY_PATH=secrets/keys/signing-2026-12.pem`, `AS_PREVIOUS_KID=2026-11`, `AS_PREVIOUS_PUBLIC_KEY_PATH=secrets/keys/signing-2026-11.pub.pem`
+4. Reinicie o AS: novos tokens saem com `kid=2026-12` e o `/jwks.json` publica as duas chaves. Depois que os tokens antigos expirarem, limpe `AS_PREVIOUS_*`.
+
 ## Estrutura
 ```
 authorization-server/   OpenID Provider (pacotes por endpoint, ver authorization-server/CLAUDE.md)
