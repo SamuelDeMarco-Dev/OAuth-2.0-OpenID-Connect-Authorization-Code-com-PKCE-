@@ -1,0 +1,10 @@
+{
+  "recommendations": [
+    "vscjava.vscode-java-pack",
+    "vmware.vscode-boot-dev-pack",
+    "redhat.vscode-xml",
+    "humao.rest-client",
+    "mikestead.dotenv",
+    "github.vscode-pull-request-github"
+  ]
+}

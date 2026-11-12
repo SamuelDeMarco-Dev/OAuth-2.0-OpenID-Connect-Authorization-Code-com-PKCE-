@@ -1,0 +1,30 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Servidor de Autorização (9443)",
+      "request": "launch",
+      "mainClass": "br.unoesc.cyber.authserver.AuthorizationServerApplication",
+      "projectName": "authorization-server",
+      "cwd": "${workspaceFolder}",
+      "envFile": "${workspaceFolder}/.env"
+    },
+    {
+      "type": "java",
+      "name": "Aplicação Cliente (8443)",
+      "request": "launch",
+      "mainClass": "br.unoesc.cyber.client.ClientApplication",
+      "projectName": "client-app",
+      "cwd": "${workspaceFolder}",
+      "envFile": "${workspaceFolder}/.env"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "AS + Cliente",
+      "configurations": ["Servidor de Autorização (9443)", "Aplicação Cliente (8443)"],
+      "stopAll": true
+    }
+  ]
+}

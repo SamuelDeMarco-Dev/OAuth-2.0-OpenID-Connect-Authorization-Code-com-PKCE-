@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./mvnw:*)",
+      "Bash(./scripts/gen-dev-secrets.sh)",
+      "Bash(./collections/negative-tests.sh)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(gh issue view:*)",
+      "Bash(gh issue list:*)",
+      "Bash(gh pr view:*)"
+    ],
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(./secrets/**)",
+      "Read(./data/**)",
+      "Read(./**/target/**)"
+    ]
+  }
+}

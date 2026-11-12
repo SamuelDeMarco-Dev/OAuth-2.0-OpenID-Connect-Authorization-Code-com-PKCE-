@@ -1,0 +1,10 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    { "label": "Gerar segredos de dev", "type": "shell", "command": "./scripts/gen-dev-secrets.sh", "problemMatcher": [] },
+    { "label": "Build + testes", "type": "shell", "command": "./mvnw -B verify", "group": { "kind": "build", "isDefault": true }, "problemMatcher": [] },
+    { "label": "Rodar Servidor de Autorização", "type": "shell", "command": "./mvnw -pl authorization-server spring-boot:run", "isBackground": true, "problemMatcher": [] },
+    { "label": "Rodar Aplicação Cliente", "type": "shell", "command": "./mvnw -pl client-app spring-boot:run", "isBackground": true, "problemMatcher": [] },
+    { "label": "Testes negativos (curl)", "type": "shell", "command": "./collections/negative-tests.sh", "problemMatcher": [] }
+  ]
+}

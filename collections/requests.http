@@ -1,0 +1,12 @@
+# Coleção REST Client (VS Code). Preencha os endpoints conforme as issues forem concluídas.
+@as = https://localhost:9443
+@app = https://localhost:8443
+
+### Descoberta
+GET {{as}}/.well-known/openid-configuration
+
+### JWKS
+GET {{as}}/jwks.json
+
+### /userinfo sem token -> 401 + WWW-Authenticate
+GET {{as}}/userinfo

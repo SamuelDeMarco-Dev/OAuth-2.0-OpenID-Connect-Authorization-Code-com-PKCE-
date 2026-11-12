@@ -1,0 +1,19 @@
+{
+  "java.configuration.updateBuildConfiguration": "automatic",
+  "java.compile.nullAnalysis.mode": "automatic",
+  "java.import.maven.enabled": true,
+  "maven.executable.preferMavenWrapper": true,
+  "editor.formatOnSave": false,
+  "files.encoding": "utf8",
+  "files.eol": "\n",
+  "files.exclude": {
+    "**/target": true,
+    "data": true
+  },
+  "search.exclude": {
+    "**/target": true,
+    "data": true,
+    "secrets": true
+  },
+  "rest-client.certificates": {}
+}

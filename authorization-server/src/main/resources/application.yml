@@ -1,0 +1,63 @@
+# Servidor de Autorização (OpenID Provider) - https://localhost:9443
+# Valores sensíveis vêm do .env na raiz (gerado por scripts/gen-dev-secrets.sh).
+spring:
+  application:
+    name: authorization-server
+  config:
+    import: optional:file:.env[.properties]
+  datasource:
+    url: jdbc:h2:file:./data/authserver;AUTO_SERVER=TRUE
+    username: sa
+    password: ""
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  thymeleaf:
+    cache: false
+
+server:
+  port: ${AS_PORT:9443}
+  ssl:
+    enabled: true
+    key-store: file:${TLS_KEYSTORE_PATH:secrets/tls/localhost.p12}
+    key-store-password: ${TLS_KEYSTORE_PASSWORD}
+    key-store-type: PKCS12
+  servlet:
+    session:
+      # Nome distinto do cliente: cookies NÃO são isolados por porta em localhost.
+      cookie:
+        name: AS_SESSION
+        http-only: true
+        secure: true
+        same-site: lax
+  error:
+    include-stacktrace: never
+    include-message: never
+
+oidc:
+  server:
+    issuer: ${AS_ISSUER:https://localhost:9443}
+    authorization-code-ttl: 60s
+    access-token-ttl: 15m
+    id-token-ttl: 15m
+    refresh-token-ttl: 8h
+    scopes-supported: [openid, profile, email]
+    signing-key:
+      kid: ${AS_SIGNING_KID:2026-11}
+      private-key-path: ${AS_SIGNING_KEY_PATH:secrets/keys/signing-2026-11.pem}
+      previous-kid: ${AS_PREVIOUS_KID:}
+      previous-public-key-path: ${AS_PREVIOUS_PUBLIC_KEY_PATH:}
+    seed-client:
+      client-id: ${OIDC_CLIENT_ID:app-cybersecurity-33506}
+      client-secret: ${OIDC_CLIENT_SECRET}
+      redirect-uri: ${OIDC_REDIRECT_URI:https://localhost:8443/callback}
+    login:
+      max-attempts: 5
+      window: 5m
+      lockout: 15m
+      bcrypt-cost: 12
+
+logging:
+  level:
+    br.unoesc.cyber: DEBUG
