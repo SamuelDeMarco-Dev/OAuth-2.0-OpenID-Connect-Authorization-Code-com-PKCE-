@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Erro — Servidor de Autorização</title>
+</head>
+<body>
+<h1>Não foi possível continuar</h1>
+<p th:text="${message != null and message != '' ? message : 'A requisição não pôde ser processada.'}">
+    A requisição não pôde ser processada.</p>
+<p>Volte para a aplicação e tente novamente.</p>
+</body>
+</html>
