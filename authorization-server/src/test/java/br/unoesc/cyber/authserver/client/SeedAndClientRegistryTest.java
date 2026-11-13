@@ -6,9 +6,8 @@ import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.ApplicationRunner;
-import org.springframework.boot.DefaultApplicationArguments;
 
+import br.unoesc.cyber.authserver.config.SeedDataRunner;
 import br.unoesc.cyber.authserver.support.AbstractIntegrationTest;
 import br.unoesc.cyber.authserver.user.AppUser;
 import br.unoesc.cyber.authserver.user.AppUserRepository;
@@ -22,7 +21,7 @@ class SeedAndClientRegistryTest extends AbstractIntegrationTest {
     @Autowired
     AppUserRepository users;
     @Autowired
-    java.util.List<ApplicationRunner> runners;
+    SeedDataRunner seeder;
 
     @Test
     void clienteCadastradoComSecretEmBcrypt() {
@@ -61,9 +60,7 @@ class SeedAndClientRegistryTest extends AbstractIntegrationTest {
         long clientes = clientRepository.count();
         long usuarios = users.count();
         String sub = users.findByUsername(ADMIN).orElseThrow().getSub();
-        for (ApplicationRunner r : runners) {
-            r.run(new DefaultApplicationArguments());
-        }
+        seeder.seed();
         assertThat(clientRepository.count()).isEqualTo(clientes);
         assertThat(users.count()).isEqualTo(usuarios);
         assertThat(users.findByUsername(ADMIN).orElseThrow().getSub()).isEqualTo(sub);

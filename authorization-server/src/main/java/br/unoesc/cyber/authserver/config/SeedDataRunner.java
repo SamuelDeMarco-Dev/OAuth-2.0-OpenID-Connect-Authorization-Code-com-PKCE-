@@ -6,11 +6,9 @@ import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.ApplicationArguments;
-import org.springframework.boot.ApplicationRunner;
+import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import br.unoesc.cyber.authserver.client.ClientRegistry;
@@ -20,9 +18,12 @@ import br.unoesc.cyber.authserver.user.AppUserRepository;
 /**
  * Cadastra o cliente OAuth e os usuários de demonstração a partir do .env.
  * Segredos nunca ficam em migrations ou no código (PDF §1.2). Idempotente.
+ *
+ * <p>Roda em {@code afterSingletonsInstantiated}, ou seja, ANTES de o Tomcat aceitar conexões
+ * (um ApplicationRunner rodaria depois, abrindo uma janela em que o cliente ainda não existe).
  */
 @Component
-class SeedDataRunner implements ApplicationRunner {
+public class SeedDataRunner implements SmartInitializingSingleton {
 
     private static final Logger log = LoggerFactory.getLogger(SeedDataRunner.class);
 
@@ -42,8 +43,11 @@ class SeedDataRunner implements ApplicationRunner {
     }
 
     @Override
-    @Transactional
-    public void run(ApplicationArguments args) {
+    public void afterSingletonsInstantiated() {
+        seed();
+    }
+
+    public void seed() {
         var c = props.seedClient();
         if (usable(c.clientSecret())) {
             clients.upsert(c.clientId(), c.clientSecret(), c.redirectUri(), String.join(" ", props.scopesSupported()));

@@ -24,6 +24,8 @@ server:
     key-store-type: PKCS12
   servlet:
     session:
+      # Só cookie: sem ";jsessionid=" na URL (vazaria o id da sessão em logs/Referer).
+      tracking-modes: cookie
       # HttpSession só guarda state/nonce/code_verifier antes do login.
       cookie:
         name: APP_PRELOGIN
