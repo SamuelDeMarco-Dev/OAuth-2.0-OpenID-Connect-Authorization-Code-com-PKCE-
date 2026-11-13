@@ -12,6 +12,10 @@ spring:
     open-in-view: false
     hibernate:
       ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc.time_zone: UTC
+        type.preferred_instant_jdbc_type: TIMESTAMP
   thymeleaf:
     cache: false
 
@@ -40,14 +44,14 @@ oidc:
   client:
     issuer: ${AS_ISSUER:https://localhost:9443}
     client-id: ${OIDC_CLIENT_ID:app-cybersecurity-33506}
-    client-secret: ${OIDC_CLIENT_SECRET}
+    client-secret: ${OIDC_CLIENT_SECRET:}
     redirect-uri: ${OIDC_REDIRECT_URI:https://localhost:8443/callback}
     scopes: [openid, profile, email]
     accepted-algorithms: [RS256]
     clock-skew: 60s
     http-timeout: 5s
     truststore-path: ${TLS_TRUSTSTORE_PATH:secrets/tls/truststore.p12}
-    truststore-password: ${TLS_TRUSTSTORE_PASSWORD}
+    truststore-password: ${TLS_TRUSTSTORE_PASSWORD:}
     session:
       cookie-name: APP_SID
       idle-timeout: 30m
