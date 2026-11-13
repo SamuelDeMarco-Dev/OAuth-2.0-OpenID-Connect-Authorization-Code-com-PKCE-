@@ -34,6 +34,9 @@ Alternativa por terminal (ou *Terminal → Run Task*):
 ./mvnw -pl client-app spring-boot:run
 ```
 
+## Testar os endpoints no Postman
+Importe `collections/postman/` e siga o guia [`docs/TESTES-POSTMAN.md`](docs/TESTES-POSTMAN.md): certificado, ambiente, como obter um authorization code e o mapa dos testes negativos.
+
 ## Variáveis de ambiente
 Todas em [`.env.example`](.env.example). O script copia para `.env` gerando valores aleatórios. Principais:
 
@@ -55,7 +58,7 @@ Todas em [`.env.example`](.env.example). O script copia para `.env` gerando valo
 ```
 authorization-server/   OpenID Provider (pacotes por endpoint, ver authorization-server/CLAUDE.md)
 client-app/             Relying Party (ver client-app/CLAUDE.md)
-collections/            requests.http (REST Client) + negative-tests.sh (curl, testes do §5)
+collections/            Postman (postman/), REST Client (requests.http) e negative-tests.sh
 docs/                   requisitos, arquitetura, relatório
 scripts/                geração de segredos de desenvolvimento
 .claude/                subagentes e permissões do Claude Code

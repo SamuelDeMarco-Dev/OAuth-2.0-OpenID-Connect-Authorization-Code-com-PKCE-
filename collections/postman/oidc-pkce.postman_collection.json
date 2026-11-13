@@ -1,0 +1,1556 @@
+{
+  "info": {
+    "_postman_id": "62b64e16-9bd1-5d39-bc01-b7da1f4addb7",
+    "name": "A1/3 — OAuth 2.0 + OIDC (Authorization Code + PKCE)",
+    "description": "Coleção do Servidor de Autorização e da aplicação cliente. Guia: docs/TESTES-POSTMAN.md",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Funções auxiliares disponíveis para todos os requests da coleção",
+          "utils = {",
+          "  b64url: (wordArray) => CryptoJS.enc.Base64.stringify(wordArray).replace(/\\+/g, '-').replace(/\\//g, '_').replace(/=+$/, ''),",
+          "  random: (bytes) => utils.b64url(CryptoJS.lib.WordArray.random(bytes)),",
+          "  decodePart: (part) => {",
+          "    let s = part.replace(/-/g, '+').replace(/_/g, '/');",
+          "    while (s.length % 4) s += '=';",
+          "    return JSON.parse(CryptoJS.enc.Base64.parse(s).toString(CryptoJS.enc.Utf8));",
+          "  },",
+          "  query: (url, name) => {",
+          "    const m = new RegExp('[?&]' + name + '=([^&#]*)').exec(url || '');",
+          "    return m ? decodeURIComponent(m[1].replace(/\\+/g, ' ')) : null;",
+          "  },",
+          "  // Pula o request (sem falhar) se a variável ainda não existir, ex.: antes do login",
+          "  requires: (name, hint) => {",
+          "    if (!pm.collectionVariables.get(name)) {",
+          "      console.log(`PULADO: {{${name}}} vazio — ${hint}`);",
+          "      // No app do Postman o request nem é enviado; no Newman as asserções são puladas",
+          "      if (pm.execution && pm.execution.skipRequest) { pm.execution.skipRequest(); }",
+          "    }",
+          "  },",
+          "  expectOAuthError: (status, error) => {",
+          "    pm.test(`HTTP ${status}`, () => pm.response.to.have.status(status));",
+          "    pm.test(`error = ${error}`, () => pm.expect(pm.response.json().error).to.eql(error));",
+          "    pm.test('Cache-Control: no-store', () => pm.expect(pm.response.headers.get('Cache-Control')).to.include('no-store'));",
+          "  },",
+          "  expectPageErrorNoRedirect: () => {",
+          "    pm.test('HTTP 400 (erro exibido na página)', () => pm.response.to.have.status(400));",
+          "    pm.test('Sem Location (não redireciona)', () => pm.expect(pm.response.headers.has('Location')).to.be.false);",
+          "  },",
+          "  expectRedirectError: (error) => {",
+          "    const loc = pm.response.headers.get('Location');",
+          "    pm.test('HTTP 302', () => pm.response.to.have.status(302));",
+          "    pm.test(`Location com error=${error}`, () => pm.expect(utils.query(loc, 'error')).to.eql(error));",
+          "    pm.test('state devolvido intacto', () => pm.expect(utils.query(loc, 'state')).to.eql(pm.collectionVariables.get('state')));",
+          "  }",
+          "};"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Funções auxiliares disponíveis para todos os requests da coleção",
+          "utils = {",
+          "  b64url: (wordArray) => CryptoJS.enc.Base64.stringify(wordArray).replace(/\\+/g, '-').replace(/\\//g, '_').replace(/=+$/, ''),",
+          "  random: (bytes) => utils.b64url(CryptoJS.lib.WordArray.random(bytes)),",
+          "  decodePart: (part) => {",
+          "    let s = part.replace(/-/g, '+').replace(/_/g, '/');",
+          "    while (s.length % 4) s += '=';",
+          "    return JSON.parse(CryptoJS.enc.Base64.parse(s).toString(CryptoJS.enc.Utf8));",
+          "  },",
+          "  query: (url, name) => {",
+          "    const m = new RegExp('[?&]' + name + '=([^&#]*)').exec(url || '');",
+          "    return m ? decodeURIComponent(m[1].replace(/\\+/g, ' ')) : null;",
+          "  },",
+          "  // Pula o request (sem falhar) se a variável ainda não existir, ex.: antes do login",
+          "  requires: (name, hint) => {",
+          "    if (!pm.collectionVariables.get(name)) {",
+          "      console.log(`PULADO: {{${name}}} vazio — ${hint}`);",
+          "      // No app do Postman o request nem é enviado; no Newman as asserções são puladas",
+          "      if (pm.execution && pm.execution.skipRequest) { pm.execution.skipRequest(); }",
+          "    }",
+          "  },",
+          "  expectOAuthError: (status, error) => {",
+          "    pm.test(`HTTP ${status}`, () => pm.response.to.have.status(status));",
+          "    pm.test(`error = ${error}`, () => pm.expect(pm.response.json().error).to.eql(error));",
+          "    pm.test('Cache-Control: no-store', () => pm.expect(pm.response.headers.get('Cache-Control')).to.include('no-store'));",
+          "  },",
+          "  expectPageErrorNoRedirect: () => {",
+          "    pm.test('HTTP 400 (erro exibido na página)', () => pm.response.to.have.status(400));",
+          "    pm.test('Sem Location (não redireciona)', () => pm.expect(pm.response.headers.has('Location')).to.be.false);",
+          "  },",
+          "  expectRedirectError: (error) => {",
+          "    const loc = pm.response.headers.get('Location');",
+          "    pm.test('HTTP 302', () => pm.response.to.have.status(302));",
+          "    pm.test(`Location com error=${error}`, () => pm.expect(utils.query(loc, 'error')).to.eql(error));",
+          "    pm.test('state devolvido intacto', () => pm.expect(utils.query(loc, 'state')).to.eql(pm.collectionVariables.get('state')));",
+          "  }",
+          "};"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "code_verifier",
+      "value": ""
+    },
+    {
+      "key": "code_challenge",
+      "value": ""
+    },
+    {
+      "key": "state",
+      "value": ""
+    },
+    {
+      "key": "nonce",
+      "value": ""
+    },
+    {
+      "key": "code",
+      "value": ""
+    },
+    {
+      "key": "access_token",
+      "value": ""
+    },
+    {
+      "key": "refresh_token",
+      "value": ""
+    },
+    {
+      "key": "refresh_token_antigo",
+      "value": ""
+    },
+    {
+      "key": "id_token",
+      "value": ""
+    },
+    {
+      "key": "id_token_sub",
+      "value": ""
+    },
+    {
+      "key": "code_verifier_errado",
+      "value": ""
+    },
+    {
+      "key": "basic_errado",
+      "value": ""
+    },
+    {
+      "key": "token_alterado",
+      "value": ""
+    },
+    {
+      "key": "authorize_url_navegador",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Descoberta e JWKS (§2.1, §2.7)",
+      "description": "Funciona já: não exige login.",
+      "item": [
+        {
+          "name": "Descoberta",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{as_url}}/.well-known/openid-configuration",
+            "description": "",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const d = pm.response.json();",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('issuer HTTPS igual ao configurado', () => pm.expect(d.issuer).to.eql(pm.environment.get('as_url')));",
+                  "pm.test('scopes openid/profile/email', () => pm.expect(d.scopes_supported).to.include.members(['openid','profile','email']));",
+                  "pm.test('response_types só code', () => pm.expect(d.response_types_supported).to.eql(['code']));",
+                  "pm.test('authorization_code suportado', () => pm.expect(d.grant_types_supported).to.include('authorization_code'));",
+                  "pm.test('PKCE só S256', () => pm.expect(d.code_challenge_methods_supported).to.eql(['S256']));",
+                  "pm.test('ID Token RS256', () => pm.expect(d.id_token_signing_alg_values_supported).to.include('RS256'));",
+                  "pm.test('auth do cliente', () => pm.expect(d.token_endpoint_auth_methods_supported).to.include.members(['client_secret_basic','client_secret_post']));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "JWKS",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{as_url}}/jwks.json",
+            "description": "",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const k = pm.response.json().keys[0];",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('kid, kty=RSA, use=sig, alg=RS256', () => {",
+                  "  pm.expect(k.kid).to.be.a('string'); pm.expect(k.kty).to.eql('RSA');",
+                  "  pm.expect(k.use).to.eql('sig'); pm.expect(k.alg).to.eql('RS256');",
+                  "});",
+                  "pm.test('sem parâmetros privados (d, p, q)', () => pm.expect(k).to.not.have.any.keys('d','p','q','dp','dq','qi'));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "2. /authorize (§2.2)",
+      "description": "Funciona já. Os redirects NÃO são seguidos para que o Location possa ser inspecionado.",
+      "item": [
+        {
+          "name": "Requisição válida → /login",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{as_url}}/authorize?response_type=code&client_id={{client_id}}&redirect_uri={{redirect_uri}}&scope=openid profile email&state={{state}}&nonce={{nonce}}&code_challenge={{code_challenge}}&code_challenge_method=S256",
+            "description": "",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Gera code_verifier (256 bits), code_challenge = BASE64URL(SHA256(verifier)), state e nonce",
+                  "const verifier = utils.random(32);",
+                  "pm.collectionVariables.set('code_verifier', verifier);",
+                  "pm.collectionVariables.set('code_challenge', utils.b64url(CryptoJS.SHA256(verifier)));",
+                  "pm.collectionVariables.set('state', utils.random(16));",
+                  "pm.collectionVariables.set('nonce', utils.random(16));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 302 para /login', () => {",
+                  "  pm.response.to.have.status(302);",
+                  "  pm.expect(pm.response.headers.get('Location')).to.match(/\\/login$/);",
+                  "});",
+                  "pm.test('Cookie AS_SESSION HttpOnly; Secure; SameSite=Lax', () => {",
+                  "  const c = pm.response.headers.get('Set-Cookie') || '';",
+                  "  pm.expect(c).to.include('AS_SESSION=').and.include('HttpOnly').and.include('Secure').and.include('SameSite=Lax');",
+                  "});",
+                  "// URL para abrir no navegador e fazer login (após #6/#8): o code volta no redirect_uri",
+                  "const url = pm.request.url.toString();",
+                  "pm.collectionVariables.set('authorize_url_navegador', url);",
+                  "console.log('Abra no navegador para logar:\\n' + url);"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "followRedirects": false
+          }
+        },
+        {
+          "name": "Negativo #11a — redirect_uri com barra final",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{as_url}}/authorize?response_type=code&client_id={{client_id}}&redirect_uri={{redirect_uri}}/&scope=openid profile email&state={{state}}&nonce={{nonce}}&code_challenge={{code_challenge}}&code_challenge_method=S256",
+            "description": "",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "utils.expectPageErrorNoRedirect();"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "followRedirects": false
+          }
+        },
+        {
+          "name": "Negativo #11b — redirect_uri com parâmetro adicional",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{as_url}}/authorize?response_type=code&client_id={{client_id}}&redirect_uri={{redirect_uri}}%3Fx%3D1&scope=openid profile email&state={{state}}&nonce={{nonce}}&code_challenge={{code_challenge}}&code_challenge_method=S256",
+            "description": "",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "utils.expectPageErrorNoRedirect();"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "followRedirects": false
+          }
+        },
+        {
+          "name": "Negativo #11c — redirect_uri com subcaminho",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{as_url}}/authorize?response_type=code&client_id={{client_id}}&redirect_uri={{redirect_uri}}/sub&scope=openid profile email&state={{state}}&nonce={{nonce}}&code_challenge={{code_challenge}}&code_challenge_method=S256",
+            "description": "",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "utils.expectPageErrorNoRedirect();"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "followRedirects": false
+          }
+        },
+        {
+          "name": "client_id desconhecido → erro na página",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{as_url}}/authorize?response_type=code&client_id=nao-existe&redirect_uri={{redirect_uri}}&scope=openid profile email&state={{state}}&nonce={{nonce}}&code_challenge={{code_challenge}}&code_challenge_method=S256",
+            "description": "",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "utils.expectPageErrorNoRedirect();"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "followRedirects": false
+          }
+        },
+        {
+          "name": "Método plain recusado",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{as_url}}/authorize?response_type=code&client_id={{client_id}}&redirect_uri={{redirect_uri}}&scope=openid profile email&state={{state}}&nonce={{nonce}}&code_challenge={{code_challenge}}&code_challenge_method=plain",
+            "description": "",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "utils.expectRedirectError('invalid_request');"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "followRedirects": false
+          }
+        },
+        {
+          "name": "Implicit (response_type=token) recusado",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{as_url}}/authorize?response_type=token&client_id={{client_id}}&redirect_uri={{redirect_uri}}&scope=openid profile email&state={{state}}&nonce={{nonce}}&code_challenge={{code_challenge}}&code_challenge_method=S256",
+            "description": "",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "utils.expectRedirectError('unsupported_response_type');"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "followRedirects": false
+          }
+        },
+        {
+          "name": "Sem openid → invalid_scope",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{as_url}}/authorize?response_type=code&client_id={{client_id}}&redirect_uri={{redirect_uri}}&scope=profile email&state={{state}}&nonce={{nonce}}&code_challenge={{code_challenge}}&code_challenge_method=S256",
+            "description": "",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "utils.expectRedirectError('invalid_scope');"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "followRedirects": false
+          }
+        },
+        {
+          "name": "Sem nonce → invalid_request",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{as_url}}/authorize?response_type=code&client_id={{client_id}}&redirect_uri={{redirect_uri}}&scope=openid profile email&state={{state}}&code_challenge={{code_challenge}}&code_challenge_method=S256",
+            "description": "",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "utils.expectRedirectError('invalid_request');"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "followRedirects": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Fluxo completo — /token, /userinfo, refresh e reuso (requer {{code}})",
+      "description": "Rode NA ORDEM, logo após obter um code (guia, seção 4; o code vale 60 s). Os passos 6 a 8 são destrutivos: o reuso do code revoga toda a família de tokens.",
+      "item": [
+        {
+          "name": "1) Trocar code por tokens (client_secret_basic)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{as_url}}/token",
+            "description": "",
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "grant_type",
+                  "value": "authorization_code",
+                  "type": "text"
+                },
+                {
+                  "key": "code",
+                  "value": "{{code}}",
+                  "type": "text"
+                },
+                {
+                  "key": "redirect_uri",
+                  "value": "{{redirect_uri}}",
+                  "type": "text"
+                },
+                {
+                  "key": "code_verifier",
+                  "value": "{{code_verifier}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{client_id}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{client_secret}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "utils.requires('code', 'obtenha um code (guia, seção 4)');"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get('code')) {",
+                  "  pm.test('PULADO: {{code}} vazio (pré-requisito)', () => {});",
+                  "} else {",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Cache-Control: no-store e Pragma: no-cache', () => {",
+                  "  pm.expect(pm.response.headers.get('Cache-Control')).to.include('no-store');",
+                  "  pm.expect(pm.response.headers.get('Pragma')).to.eql('no-cache');",
+                  "});",
+                  "const t = pm.response.json();",
+                  "if (pm.response.code !== 200) { console.log('Troca falhou — tokens anteriores mantidos:', JSON.stringify(t)); }",
+                  "else {",
+                  "pm.test('token_type Bearer e expires_in > 0', () => { pm.expect(t.token_type).to.eql('Bearer'); pm.expect(t.expires_in).to.be.above(0); });",
+                  "pm.collectionVariables.set('access_token', t.access_token);",
+                  "pm.collectionVariables.set('refresh_token', t.refresh_token);",
+                  "if (t.id_token) {",
+                  "  pm.collectionVariables.set('id_token', t.id_token);",
+                  "  const [h, p, s] = t.id_token.split('.');",
+                  "  const header = utils.decodePart(h), payload = utils.decodePart(p);",
+                  "  pm.collectionVariables.set('id_token_sub', payload.sub);",
+                  "  // Evidência para o relatório: as três partes do ID Token",
+                  "  console.log('ID TOKEN — header:', JSON.stringify(header, null, 2));",
+                  "  console.log('ID TOKEN — payload:', JSON.stringify(payload, null, 2));",
+                  "  console.log('ID TOKEN — assinatura (base64url):', s);",
+                  "  pm.test('header alg=RS256, typ=JWT, kid', () => { pm.expect(header.alg).to.eql('RS256'); pm.expect(header.typ).to.eql('JWT'); pm.expect(header.kid).to.be.a('string'); });",
+                  "  pm.test('claims obrigatórios', () => pm.expect(payload).to.include.all.keys('iss','sub','aud','exp','iat','nonce','azp','name','email','email_verified','role'));",
+                  "  pm.test('nonce igual ao enviado', () => pm.expect(payload.nonce).to.eql(pm.collectionVariables.get('nonce')));",
+                  "  pm.test('exp = iat + 900', () => pm.expect(payload.exp - payload.iat).to.eql(900));",
+                  "}",
+                  "}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2) /userinfo com access token → sub igual ao do ID Token",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": "{{as_url}}/userinfo",
+            "description": "",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "utils.requires('access_token', 'rode antes a pasta 3 (troca do code)');"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get('access_token')) {",
+                  "  pm.test('PULADO: {{access_token}} vazio (pré-requisito)', () => {});",
+                  "} else {",
+                  "const u = pm.response.json();",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('sub igual ao do ID Token (checklist 4.3 #10)', () => pm.expect(u.sub).to.eql(pm.collectionVariables.get('id_token_sub')));",
+                  "pm.test('name e email', () => pm.expect(u).to.include.keys('name', 'email'));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3) /userinfo com 1 byte alterado na assinatura",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token_alterado}}"
+              }
+            ],
+            "url": "{{as_url}}/userinfo",
+            "description": "",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "utils.requires('access_token', 'rode antes a pasta 3 (troca do code)');",
+                  "",
+                  "const t = pm.collectionVariables.get('access_token') || 'a.b.c';",
+                  "const i = t.length - 5;",
+                  "pm.collectionVariables.set('token_alterado', t.substring(0, i) + (t[i] === 'A' ? 'B' : 'A') + t.substring(i + 1));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get('access_token')) {",
+                  "  pm.test('PULADO: {{access_token}} vazio (pré-requisito)', () => {});",
+                  "} else {",
+                  "pm.test('HTTP 401', () => pm.response.to.have.status(401));",
+                  "pm.test('WWW-Authenticate: Bearer', () => pm.expect(pm.response.headers.get('WWW-Authenticate')).to.match(/^Bearer/));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4) /userinfo com ID Token no lugar do access token",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{id_token}}"
+              }
+            ],
+            "url": "{{as_url}}/userinfo",
+            "description": "",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "utils.requires('id_token', 'rode antes o passo 1');"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get('id_token')) {",
+                  "  pm.test('PULADO: {{id_token}} vazio (pré-requisito)', () => {});",
+                  "} else {",
+                  "pm.test('HTTP 401', () => pm.response.to.have.status(401));",
+                  "pm.test('WWW-Authenticate: Bearer', () => pm.expect(pm.response.headers.get('WWW-Authenticate')).to.match(/^Bearer/));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "5) Refresh token (rotação)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{as_url}}/token",
+            "description": "",
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "grant_type",
+                  "value": "refresh_token",
+                  "type": "text"
+                },
+                {
+                  "key": "refresh_token",
+                  "value": "{{refresh_token}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{client_id}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{client_secret}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "utils.requires('refresh_token', 'rode antes o passo 1');",
+                  "pm.collectionVariables.set('refresh_token_antigo', pm.collectionVariables.get('refresh_token'));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get('refresh_token')) {",
+                  "  pm.test('PULADO: {{refresh_token}} vazio (pré-requisito)', () => {});",
+                  "} else {",
+                  "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Cache-Control: no-store e Pragma: no-cache', () => {",
+                  "  pm.expect(pm.response.headers.get('Cache-Control')).to.include('no-store');",
+                  "  pm.expect(pm.response.headers.get('Pragma')).to.eql('no-cache');",
+                  "});",
+                  "const t = pm.response.json();",
+                  "if (pm.response.code !== 200) { console.log('Troca falhou — tokens anteriores mantidos:', JSON.stringify(t)); }",
+                  "else {",
+                  "pm.test('token_type Bearer e expires_in > 0', () => { pm.expect(t.token_type).to.eql('Bearer'); pm.expect(t.expires_in).to.be.above(0); });",
+                  "pm.collectionVariables.set('access_token', t.access_token);",
+                  "pm.collectionVariables.set('refresh_token', t.refresh_token);",
+                  "if (t.id_token) {",
+                  "  pm.collectionVariables.set('id_token', t.id_token);",
+                  "  const [h, p, s] = t.id_token.split('.');",
+                  "  const header = utils.decodePart(h), payload = utils.decodePart(p);",
+                  "  pm.collectionVariables.set('id_token_sub', payload.sub);",
+                  "  // Evidência para o relatório: as três partes do ID Token",
+                  "  console.log('ID TOKEN — header:', JSON.stringify(header, null, 2));",
+                  "  console.log('ID TOKEN — payload:', JSON.stringify(payload, null, 2));",
+                  "  console.log('ID TOKEN — assinatura (base64url):', s);",
+                  "  pm.test('header alg=RS256, typ=JWT, kid', () => { pm.expect(header.alg).to.eql('RS256'); pm.expect(header.typ).to.eql('JWT'); pm.expect(header.kid).to.be.a('string'); });",
+                  "  pm.test('claims obrigatórios', () => pm.expect(payload).to.include.all.keys('iss','sub','aud','exp','iat','nonce','azp','name','email','email_verified','role'));",
+                  "  pm.test('nonce igual ao enviado', () => pm.expect(payload.nonce).to.eql(pm.collectionVariables.get('nonce')));",
+                  "  pm.test('exp = iat + 900', () => pm.expect(payload.exp - payload.iat).to.eql(900));",
+                  "}",
+                  "}",
+                  "pm.test('refresh novo', () => pm.expect(pm.response.json().refresh_token).to.not.eql(pm.collectionVariables.get('refresh_token_antigo')));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "6) Negativo #9 — reutilizar o MESMO code",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{as_url}}/token",
+            "description": "",
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "grant_type",
+                  "value": "authorization_code",
+                  "type": "text"
+                },
+                {
+                  "key": "code",
+                  "value": "{{code}}",
+                  "type": "text"
+                },
+                {
+                  "key": "redirect_uri",
+                  "value": "{{redirect_uri}}",
+                  "type": "text"
+                },
+                {
+                  "key": "code_verifier",
+                  "value": "{{code_verifier}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{client_id}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{client_secret}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "utils.requires('code', 'obtenha um code (guia, seção 4)');"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get('code')) {",
+                  "  pm.test('PULADO: {{code}} vazio (pré-requisito)', () => {});",
+                  "} else {",
+                  "utils.expectOAuthError(400, 'invalid_grant');",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "7) Negativo #9 — /userinfo após o reuso: token revogado",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": "{{as_url}}/userinfo",
+            "description": "O access token (mesmo o obtido pelo refresh) pertence à família do code reutilizado e foi revogado.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "utils.requires('access_token', 'rode antes a pasta 3 (troca do code)');"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get('access_token')) {",
+                  "  pm.test('PULADO: {{access_token}} vazio (pré-requisito)', () => {});",
+                  "} else {",
+                  "pm.test('HTTP 401', () => pm.response.to.have.status(401));",
+                  "pm.test('WWW-Authenticate: Bearer', () => pm.expect(pm.response.headers.get('WWW-Authenticate')).to.match(/^Bearer/));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "8) Reutilizar refresh token antigo → invalid_grant",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{as_url}}/token",
+            "description": "",
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "grant_type",
+                  "value": "refresh_token",
+                  "type": "text"
+                },
+                {
+                  "key": "refresh_token",
+                  "value": "{{refresh_token_antigo}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{client_id}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{client_secret}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "utils.requires('refresh_token_antigo', 'rode antes o passo 5');"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get('refresh_token_antigo')) {",
+                  "  pm.test('PULADO: {{refresh_token_antigo}} vazio (pré-requisito)', () => {});",
+                  "} else {",
+                  "utils.expectOAuthError(400, 'invalid_grant');",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "4. Erros do /token (não exigem code válido)",
+      "description": "Funciona já (preencha client_secret no ambiente).",
+      "item": [
+        {
+          "name": "client_secret errado → 401 invalid_client",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Basic {{basic_errado}}"
+              }
+            ],
+            "url": "{{as_url}}/token",
+            "description": "",
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "grant_type",
+                  "value": "authorization_code",
+                  "type": "text"
+                },
+                {
+                  "key": "code",
+                  "value": "qualquer",
+                  "type": "text"
+                },
+                {
+                  "key": "redirect_uri",
+                  "value": "{{redirect_uri}}",
+                  "type": "text"
+                },
+                {
+                  "key": "code_verifier",
+                  "value": "{{code_verifier}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('basic_errado', btoa(pm.environment.get('client_id') + ':errado'));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "utils.expectOAuthError(401, 'invalid_client');",
+                  "pm.test('WWW-Authenticate: Basic', () => pm.expect(pm.response.headers.get('WWW-Authenticate')).to.match(/^Basic/));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "grant_type=password recusado",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{as_url}}/token",
+            "description": "",
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "grant_type",
+                  "value": "password",
+                  "type": "text"
+                },
+                {
+                  "key": "username",
+                  "value": "admin",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "qualquer",
+                  "type": "text"
+                }
+              ]
+            },
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{client_id}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{client_secret}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "utils.expectOAuthError(400, 'unsupported_grant_type');"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "code inexistente → invalid_grant",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{as_url}}/token",
+            "description": "",
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "grant_type",
+                  "value": "authorization_code",
+                  "type": "text"
+                },
+                {
+                  "key": "code",
+                  "value": "code-inexistente",
+                  "type": "text"
+                },
+                {
+                  "key": "redirect_uri",
+                  "value": "{{redirect_uri}}",
+                  "type": "text"
+                },
+                {
+                  "key": "code_verifier",
+                  "value": "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk",
+                  "type": "text"
+                }
+              ]
+            },
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{client_id}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{client_secret}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "utils.expectOAuthError(400, 'invalid_grant');"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "5. Negativo #10 e redirect_uri divergente (cada um requer um code NOVO)",
+      "description": "Para cada request: rode o passo 1, abra a URL do console no navegador, faça login, copie o code para {{code}} e rode o request em até 60 s.",
+      "item": [
+        {
+          "name": "1) Gerar nova URL de /authorize (PKCE, state, nonce novos)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{as_url}}/authorize?response_type=code&client_id={{client_id}}&redirect_uri={{redirect_uri}}&scope=openid profile email&state={{state}}&nonce={{nonce}}&code_challenge={{code_challenge}}&code_challenge_method=S256",
+            "description": "",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Gera code_verifier (256 bits), code_challenge = BASE64URL(SHA256(verifier)), state e nonce",
+                  "const verifier = utils.random(32);",
+                  "pm.collectionVariables.set('code_verifier', verifier);",
+                  "pm.collectionVariables.set('code_challenge', utils.b64url(CryptoJS.SHA256(verifier)));",
+                  "pm.collectionVariables.set('state', utils.random(16));",
+                  "pm.collectionVariables.set('nonce', utils.random(16));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 302', () => pm.response.to.have.status(302));",
+                  "console.log('Abra no navegador para logar:\\n' + pm.request.url.toString());"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "followRedirects": false
+          }
+        },
+        {
+          "name": "2) Negativo #10 — code_verifier incorreto",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{as_url}}/token",
+            "description": "",
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "grant_type",
+                  "value": "authorization_code",
+                  "type": "text"
+                },
+                {
+                  "key": "code",
+                  "value": "{{code}}",
+                  "type": "text"
+                },
+                {
+                  "key": "redirect_uri",
+                  "value": "{{redirect_uri}}",
+                  "type": "text"
+                },
+                {
+                  "key": "code_verifier",
+                  "value": "{{code_verifier_errado}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{client_id}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{client_secret}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "utils.requires('code', 'obtenha um code (guia, seção 4)');",
+                  "pm.collectionVariables.set('code_verifier_errado', utils.random(32));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get('code')) {",
+                  "  pm.test('PULADO: {{code}} vazio (pré-requisito)', () => {});",
+                  "} else {",
+                  "utils.expectOAuthError(400, 'invalid_grant');",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3) redirect_uri diferente da usada no /authorize",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{as_url}}/token",
+            "description": "",
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "grant_type",
+                  "value": "authorization_code",
+                  "type": "text"
+                },
+                {
+                  "key": "code",
+                  "value": "{{code}}",
+                  "type": "text"
+                },
+                {
+                  "key": "redirect_uri",
+                  "value": "{{redirect_uri}}/",
+                  "type": "text"
+                },
+                {
+                  "key": "code_verifier",
+                  "value": "{{code_verifier}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "{{client_id}}",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "{{client_secret}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "utils.requires('code', 'obtenha um code (guia, seção 4)');"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get('code')) {",
+                  "  pm.test('PULADO: {{code}} vazio (pré-requisito)', () => {});",
+                  "} else {",
+                  "utils.expectOAuthError(400, 'invalid_grant');",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "6. /userinfo sem token ou expirado (§2.6)",
+      "description": "14a funciona já. 14b: use um access token com mais de 15 min.",
+      "item": [
+        {
+          "name": "Negativo #14a — sem token",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{as_url}}/userinfo",
+            "description": "",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 401', () => pm.response.to.have.status(401));",
+                  "pm.test('WWW-Authenticate: Bearer', () => pm.expect(pm.response.headers.get('WWW-Authenticate')).to.match(/^Bearer/));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Negativo #14b — token expirado",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": "{{as_url}}/userinfo",
+            "description": "Faça um fluxo novo (pasta 3, só o passo 1) e rode este request 15 min depois — ou suba o AS com OIDC_SERVER_ACCESSTOKENTTL=30s e espere 30 s.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "utils.requires('access_token', 'rode antes a pasta 3 (troca do code)');"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get('access_token')) {",
+                  "  pm.test('PULADO: {{access_token}} vazio (pré-requisito)', () => {});",
+                  "} else {",
+                  "pm.test('HTTP 401', () => pm.response.to.have.status(401));",
+                  "pm.test('WWW-Authenticate: Bearer', () => pm.expect(pm.response.headers.get('WWW-Authenticate')).to.match(/^Bearer/));",
+                  "pm.test('error=\"invalid_token\"', () => pm.expect(pm.response.headers.get('WWW-Authenticate')).to.include('invalid_token'));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "7. Aplicação cliente (após #14–#23)",
+      "description": "Endpoints do cliente; disponíveis quando as issues do cliente forem concluídas.",
+      "item": [
+        {
+          "name": "Negativo #8 — callback com state divergente",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{app_url}}/callback?code=qualquer&state=state-forjado",
+            "description": "O cliente deve abortar ANTES de chamar o /token (confira no log do cliente).",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Não cria sessão (sem cookie APP_SID)', () => pm.expect(pm.response.headers.get('Set-Cookie') || '').to.not.include('APP_SID'));"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "followRedirects": false
+          }
+        },
+        {
+          "name": "Negativo #8 — callback sem state",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{app_url}}/callback?code=qualquer",
+            "description": "",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Não cria sessão (sem cookie APP_SID)', () => pm.expect(pm.response.headers.get('Set-Cookie') || '').to.not.include('APP_SID'));"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "followRedirects": false
+          }
+        },
+        {
+          "name": "Erro do provedor (access_denied) no callback",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{app_url}}/callback?error=access_denied&error_description=negado&state=x",
+            "description": "",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Sem sessão', () => pm.expect(pm.response.headers.get('Set-Cookie') || '').to.not.include('APP_SID'));"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "followRedirects": false
+          }
+        },
+        {
+          "name": "/admin sem sessão",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{app_url}}/admin",
+            "description": "",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Não libera (302 para login ou 401/403)', () => pm.expect(pm.response.code).to.be.oneOf([302, 401, 403]));"
+                ]
+              }
+            }
+          ],
+          "protocolProfileBehavior": {
+            "followRedirects": false
+          }
+        }
+      ]
+    }
+  ]
+}
