@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Entrar — Servidor de Autorização')}"></head>
+<body>
+<main>
+    <h1>Entrar</h1>
+    <p class="muted">A aplicação <strong th:text="${clientId}">cliente</strong> solicita sua identificação.
+        Sua senha é enviada somente a este Servidor de Autorização.</p>
+    <p class="alert" role="alert" th:if="${error}" th:text="${error}">erro</p>
+    <form method="post" th:action="@{/login}" autocomplete="on">
+        <input type="hidden" name="form_token" th:value="${formToken}">
+        <label for="username">Usuário</label>
+        <input id="username" name="username" type="text" autocomplete="username" required autofocus
+               th:value="${username}">
+        <label for="password">Senha</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" required>
+        <button type="submit">Entrar</button>
+    </form>
+</main>
+</body>
+</html>
