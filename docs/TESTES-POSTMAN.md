@@ -13,10 +13,10 @@ Arquivos (em `collections/postman/`):
 |---|---|
 | 1. Descoberta e JWKS | ✅ sim |
 | 2. /authorize | ✅ sim |
-| 3. Fluxo completo (/token, /userinfo, refresh, reuso) | ⏳ precisa de um `code` → depende do login (#6) e do consentimento (#8) |
+| 3. Fluxo completo (/token, /userinfo, refresh, reuso) | ✅ sim (obtenha o `code` pelo navegador — seção 4) |
 | 4. Erros do /token | ✅ sim |
-| 5. Negativo #10 e redirect_uri divergente | ⏳ precisa de um `code` novo (#6, #8) |
-| 6. /userinfo sem token ou expirado | ✅ 14a sim · ⏳ 14b precisa de um access token |
+| 5. Negativo #10 e redirect_uri divergente | ✅ sim (um `code` novo por request) |
+| 6. /userinfo sem token ou expirado | ✅ sim (14b: token com mais de 15 min) |
 | 7. Aplicação cliente | ⏳ depois das issues do cliente (#14–#23) |
 
 Requests que dependem de algo ainda inexistente **são pulados automaticamente** (aparecem como `PULADO` no console e nos resultados, sem falhar).
@@ -97,7 +97,7 @@ Este caminho não alimenta as variáveis da coleção; para os testes negativos 
 | 11 | redirect_uri com barra final, parâmetro extra, subcaminho | Pasta **2** (#11a, #11b, #11c) | 400 na página, sem `Location` |
 | 13 | `/admin` com `role=user` | Navegador, após o cliente (#22) | 403 |
 | 14 | `/userinfo` sem token / expirado | Pasta **6** | 401 + `WWW-Authenticate: Bearer` |
-| 15 | Força bruta no login | Navegador, após o login (#6) — 6 senhas erradas seguidas | Bloqueio |
+| 15 | Força bruta no login | Navegador: no formulário de login, 5 senhas erradas seguidas e depois a correta | 429 "Muitas tentativas" |
 
 Extras também cobertos: `plain` e `response_type=token` recusados, escopo sem `openid`, `grant_type=password` recusado, segredo do cliente errado (401 + `WWW-Authenticate: Basic`), assinatura alterada e ID Token usado como access token no `/userinfo`, rotação e reuso de refresh token.
 

@@ -48,6 +48,7 @@ sequenceDiagram
 | Assinatura | RS256, RSA 2048, `kid` = `AAAA-MM` | Exigência §2.5; rotação mantém a anterior no JWKS (§2.7). |
 | Tempos de vida | code 60 s · access 15 min · id 15 min · refresh 8 h (rotativo) · sessão 30 min ociosa / 8 h absoluta | Sugestões do PDF; justificar no relatório. |
 | Cookies | AS: `AS_SESSION` · Cliente: `APP_SID` (sessão local) e `APP_PRELOGIN` (state/nonce/verifier) | **Cookies não são isolados por porta**: nomes distintos evitam que um app sobrescreva o outro em `localhost`. |
+| Consentimento | Registrado em `user_consent`; reaproveitado se o usuário já consentiu os mesmos escopos para o mesmo cliente | Registro explícito exigido pelo §2.3 |
 | Usuário inexistente no cliente (passo 10) | *A definir na issue de vínculo* — padrão sugerido: **recusar login** e exigir pré-cadastro | Escolha deve ser documentada (§4.2.10). |
 
 ## Segredos

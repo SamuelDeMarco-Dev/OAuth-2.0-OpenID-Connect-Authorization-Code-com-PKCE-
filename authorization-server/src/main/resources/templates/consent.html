@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Autorizar acesso')}"></head>
+<body>
+<main>
+    <h1>Autorizar acesso</h1>
+    <p>A aplicação <strong th:text="${clientId}">cliente</strong> está pedindo permissão para:</p>
+    <ul class="scopes">
+        <li th:each="s : ${scopes}"><span th:text="${s.value}">descrição</span>
+            <span class="muted">(<code th:text="${s.key}">scope</code>)</span></li>
+    </ul>
+    <form method="post" th:action="@{/consent}">
+        <input type="hidden" name="form_token" th:value="${formToken}">
+        <button type="submit" name="decision" value="approve">Permitir</button>
+        <button type="submit" name="decision" value="deny" class="secondary">Negar</button>
+    </form>
+</main>
+</body>
+</html>
