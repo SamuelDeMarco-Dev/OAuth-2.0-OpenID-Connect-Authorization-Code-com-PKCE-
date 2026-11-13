@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Login não concluído</title>
+    <style>
+        body { font-family: system-ui, sans-serif; background: #f4f6f8; margin: 0; color: #1f2933; }
+        main { max-width: 480px; margin: 8vh auto; background: #fff; padding: 2rem; border-radius: 12px;
+               box-shadow: 0 4px 16px rgba(0,0,0,.08); }
+        a { color: #1f6feb; }
+    </style>
+</head>
+<body>
+<main>
+    <h1>Login não concluído</h1>
+    <p th:text="${message}">Não foi possível concluir o login.</p>
+    <p><a th:href="@{/}">Voltar ao início</a></p>
+</main>
+</body>
+</html>
