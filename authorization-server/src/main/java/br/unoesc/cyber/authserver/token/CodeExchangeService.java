@@ -27,11 +27,14 @@ class CodeExchangeService {
     private static final Pattern VERIFIER = Pattern.compile("^[A-Za-z0-9\\-._~]{43,128}$");
 
     private final AuthorizationCodeRepository codes;
+    private final IssuedTokenRepository issuedTokens;
     private final TokenService tokenService;
     private final Clock clock;
 
-    CodeExchangeService(AuthorizationCodeRepository codes, TokenService tokenService, Clock clock) {
+    CodeExchangeService(AuthorizationCodeRepository codes, IssuedTokenRepository issuedTokens,
+            TokenService tokenService, Clock clock) {
         this.codes = codes;
+        this.issuedTokens = issuedTokens;
         this.tokenService = tokenService;
         this.clock = clock;
     }
@@ -68,8 +71,13 @@ class CodeExchangeService {
         return tokenService.issueForCode(stored);
     }
 
-    /** Ponto de extensão da issue #12 (revogação da família). */
-    void onReuse(AuthorizationCode stored) {
-        log.warn("Reutilização de authorization code detectada (client_id={})", stored.getClientId());
+    /**
+     * Reutilização do code (RFC 6749 §4.1.2, PDF §2.4): revoga IMEDIATAMENTE todos os tokens
+     * emitidos a partir dele — access, ID e refresh (inclusive os já rotacionados).
+     */
+    private void onReuse(AuthorizationCode stored) {
+        int revoked = issuedTokens.revokeFamily(stored.getCodeHash());
+        log.warn("Reutilização de authorization code detectada (client_id={}, sub={}): {} tokens revogados",
+                stored.getClientId(), stored.getUserSub(), revoked);
     }
 }
