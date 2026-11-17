@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 728" width="860" height="728" font-family="Helvetica, Arial, sans-serif">
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1f2933"/></marker></defs>
+<rect width="860" height="728" fill="#ffffff"/>
+<rect x="-20" y="8" width="230" height="46" rx="8" fill="#e8f0fe" stroke="#1f6feb"/>
+<text x="95" y="28" text-anchor="middle" font-size="14" font-weight="bold" fill="#0b3d91">Usuário</text>
+<text x="95" y="45" text-anchor="middle" font-size="11" fill="#3e4c59">navegador</text>
+<line x1="95" y1="54" x2="95" y2="718" stroke="#9aa5b1" stroke-dasharray="4 4"/>
+<rect x="305" y="8" width="230" height="46" rx="8" fill="#e8f0fe" stroke="#1f6feb"/>
+<text x="420" y="28" text-anchor="middle" font-size="14" font-weight="bold" fill="#0b3d91">Aplicação cliente</text>
+<text x="420" y="45" text-anchor="middle" font-size="11" fill="#3e4c59">Relying Party · :8443</text>
+<line x1="420" y1="54" x2="420" y2="718" stroke="#9aa5b1" stroke-dasharray="4 4"/>
+<rect x="630" y="8" width="230" height="46" rx="8" fill="#e8f0fe" stroke="#1f6feb"/>
+<text x="745" y="28" text-anchor="middle" font-size="14" font-weight="bold" fill="#0b3d91">Servidor de Autorização</text>
+<text x="745" y="45" text-anchor="middle" font-size="11" fill="#3e4c59">OpenID Provider · :9443</text>
+<line x1="745" y1="54" x2="745" y2="718" stroke="#9aa5b1" stroke-dasharray="4 4"/>
+<line x1="95" y1="88" x2="418" y2="88" stroke="#1f2933" stroke-width="1.4"  marker-end="url(#a)"/>
+<text x="257.5" y="82" text-anchor="middle" font-size="11.5" fill="#1f2933"><tspan font-weight="bold">1.</tspan> GET /login  (clique em “Entrar”)</text>
+<rect x="160.0" y="105" width="520" height="22" rx="4" fill="#fff8e1" stroke="#f0b429"/>
+<text x="420.0" y="120" text-anchor="middle" font-size="11" fill="#513c06">gera state, nonce, code_verifier (256 bits) · challenge = B64URL(SHA256(verifier))</text>
+<line x1="420" y1="150" x2="97" y2="150" stroke="#1f2933" stroke-width="1.4" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text x="257.5" y="144" text-anchor="middle" font-size="11.5" fill="#1f2933"><tspan font-weight="bold">2.</tspan> 302 → /authorize (code, state, nonce, S256)</text>
+<line x1="95" y1="181" x2="743" y2="181" stroke="#1f2933" stroke-width="1.4"  marker-end="url(#a)"/>
+<text x="420.0" y="175" text-anchor="middle" font-size="11.5" fill="#1f2933"><tspan font-weight="bold">3.</tspan> GET /authorize</text>
+<rect x="367.0" y="198" width="485.0" height="22" rx="4" fill="#fff8e1" stroke="#f0b429"/>
+<text x="609.5" y="213" text-anchor="middle" font-size="11" fill="#513c06">client_id + redirect_uri por igualdade exata (inválido → erro sem redirect)</text>
+<line x1="745" y1="243" x2="97" y2="243" stroke="#1f2933" stroke-width="1.4" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text x="420.0" y="237" text-anchor="middle" font-size="11.5" fill="#1f2933"><tspan font-weight="bold">4.</tspan> formulário de login</text>
+<line x1="95" y1="274" x2="743" y2="274" stroke="#1f2933" stroke-width="1.4"  marker-end="url(#a)"/>
+<text x="420.0" y="268" text-anchor="middle" font-size="11.5" fill="#1f2933"><tspan font-weight="bold">5.</tspan> POST /login — senha só aqui (BCrypt 12, rate limiting)</text>
+<line x1="745" y1="305" x2="97" y2="305" stroke="#1f2933" stroke-width="1.4" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text x="420.0" y="299" text-anchor="middle" font-size="11.5" fill="#1f2933"><tspan font-weight="bold">6.</tspan> tela de consentimento dos escopos</text>
+<line x1="95" y1="336" x2="743" y2="336" stroke="#1f2933" stroke-width="1.4"  marker-end="url(#a)"/>
+<text x="420.0" y="330" text-anchor="middle" font-size="11.5" fill="#1f2933"><tspan font-weight="bold">7.</tspan> POST /consent (Permitir)</text>
+<rect x="484.8" y="353" width="367.2" height="22" rx="4" fill="#fff8e1" stroke="#f0b429"/>
+<text x="668.4" y="368" text-anchor="middle" font-size="11" fill="#513c06">code de 256 bits · 60 s · uso único · só o hash no banco</text>
+<line x1="745" y1="398" x2="97" y2="398" stroke="#1f2933" stroke-width="1.4" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text x="420.0" y="392" text-anchor="middle" font-size="11.5" fill="#1f2933"><tspan font-weight="bold">8.</tspan> 302 → /callback?code&amp;state</text>
+<line x1="95" y1="429" x2="418" y2="429" stroke="#1f2933" stroke-width="1.4"  marker-end="url(#a)"/>
+<text x="257.5" y="423" text-anchor="middle" font-size="11.5" fill="#1f2933"><tspan font-weight="bold">9.</tspan> GET /callback?code&amp;state</text>
+<rect x="242.6" y="446" width="354.8" height="22" rx="4" fill="#fff8e1" stroke="#f0b429"/>
+<text x="420.0" y="461" text-anchor="middle" font-size="11" fill="#513c06">state igual ao da sessão? senão aborta antes do /token</text>
+<line x1="420" y1="491" x2="743" y2="491" stroke="#1f2933" stroke-width="1.4"  marker-end="url(#a)"/>
+<text x="582.5" y="485" text-anchor="middle" font-size="11.5" fill="#1f2933"><tspan font-weight="bold">10.</tspan> POST /token — Basic + code + redirect_uri + code_verifier</text>
+<line x1="745" y1="522" x2="422" y2="522" stroke="#1f2933" stroke-width="1.4" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text x="582.5" y="516" text-anchor="middle" font-size="11.5" fill="#1f2933"><tspan font-weight="bold">11.</tspan> 200 {id_token, access_token, refresh_token} · no-store</text>
+<line x1="420" y1="553" x2="743" y2="553" stroke="#1f2933" stroke-width="1.4"  marker-end="url(#a)"/>
+<text x="582.5" y="547" text-anchor="middle" font-size="11.5" fill="#1f2933"><tspan font-weight="bold">12.</tspan> GET /jwks.json (chave pelo kid)</text>
+<rect x="189.9" y="570" width="460.2" height="22" rx="4" fill="#fff8e1" stroke="#f0b429"/>
+<text x="420.0" y="585" text-anchor="middle" font-size="11" fill="#513c06">decompõe e valida o ID Token — checklist 4.3 #1–#8 (lista fixa [RS256])</text>
+<line x1="420" y1="615" x2="743" y2="615" stroke="#1f2933" stroke-width="1.4"  marker-end="url(#a)"/>
+<text x="582.5" y="609" text-anchor="middle" font-size="11.5" fill="#1f2933"><tspan font-weight="bold">13.</tspan> GET /userinfo (Bearer) → sub igual ao do ID Token (#10)</text>
+<rect x="160.0" y="632" width="520" height="22" rx="4" fill="#fff8e1" stroke="#f0b429"/>
+<text x="420.0" y="647" text-anchor="middle" font-size="11" fill="#513c06">iss + sub → users.id (#9) · sessão APP_SID nova (rotação) · /admin só com role admin</text>
+<line x1="420" y1="677" x2="97" y2="677" stroke="#1f2933" stroke-width="1.4" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text x="257.5" y="671" text-anchor="middle" font-size="11.5" fill="#1f2933"><tspan font-weight="bold">14.</tspan> 302 → /  + cookie APP_SID</text>
+</svg>
