@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Meu perfil</title>
+    <style>
+        body { font-family: system-ui, sans-serif; background: #f4f6f8; margin: 0; color: #1f2933; }
+        main { max-width: 720px; margin: 6vh auto; background: #fff; padding: 2rem; border-radius: 12px;
+               box-shadow: 0 4px 16px rgba(0,0,0,.08); }
+        table { border-collapse: collapse; width: 100%; font-size: .9rem; }
+        th, td { text-align: left; padding: .4rem .5rem; border-bottom: 1px solid #e4e7eb; }
+        code { font-size: .85rem; }
+        a { color: #1f6feb; }
+    </style>
+</head>
+<body>
+<main>
+    <h1>Meu perfil</h1>
+    <table>
+        <tr><th>id (interno)</th><td th:text="${user.id}">1</td></tr>
+        <tr><th>user_name</th><td th:text="${user.userName}">user</td></tr>
+        <tr><th>full_name</th><td th:text="${user.fullName}">nome</td></tr>
+        <tr><th>oidc_iss</th><td><code th:text="${user.oidcIss}">iss</code></td></tr>
+        <tr><th>oidc_sub</th><td><code th:text="${user.oidcSub}">sub</code></td></tr>
+        <tr><th>role</th><td><code th:text="${user.role}">role</code></td></tr>
+        <tr><th>created_at</th><td th:text="${user.createdAt}">data</td></tr>
+    </table>
+    <p><a th:href="@{/}">Início</a></p>
+</main>
+</body>
+</html>

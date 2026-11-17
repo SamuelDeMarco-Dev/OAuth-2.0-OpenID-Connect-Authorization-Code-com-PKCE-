@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Área administrativa</title>
+    <style>
+        body { font-family: system-ui, sans-serif; background: #f4f6f8; margin: 0; color: #1f2933; }
+        main { max-width: 720px; margin: 6vh auto; background: #fff; padding: 2rem; border-radius: 12px;
+               box-shadow: 0 4px 16px rgba(0,0,0,.08); }
+        table { border-collapse: collapse; width: 100%; font-size: .9rem; }
+        th, td { text-align: left; padding: .4rem .5rem; border-bottom: 1px solid #e4e7eb; }
+        code { font-size: .85rem; }
+        a { color: #1f6feb; }
+    </style>
+</head>
+<body>
+<main>
+    <h1>Área administrativa</h1>
+    <p>Acesso liberado para <strong th:text="${user.fullName}">admin</strong> (role <code>admin</code>).</p>
+    <h2>Usuários vinculados</h2>
+    <table>
+        <tr><th>id</th><th>user_name</th><th>full_name</th><th>oidc_sub</th><th>role</th><th>created_at</th></tr>
+        <tr th:each="u : ${users}">
+            <td th:text="${u.id}">1</td><td th:text="${u.userName}">u</td><td th:text="${u.fullName}">n</td>
+            <td><code th:text="${u.oidcSub}">sub</code></td><td th:text="${u.role}">r</td>
+            <td th:text="${u.createdAt}">d</td>
+        </tr>
+    </table>
+    <p><a th:href="@{/}">Início</a></p>
+</main>
+</body>
+</html>
