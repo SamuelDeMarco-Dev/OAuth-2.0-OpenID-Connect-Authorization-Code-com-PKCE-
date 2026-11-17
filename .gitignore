@@ -32,3 +32,6 @@ bin/
 
 # ---- Claude Code (local por dev) ----
 .claude/settings.local.json
+
+# ---- Saída dos testes negativos (evidência local) ----
+evidencias/

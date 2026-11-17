@@ -17,9 +17,9 @@ Arquivos (em `collections/postman/`):
 | 4. Erros do /token | ✅ sim |
 | 5. Negativo #10 e redirect_uri divergente | ✅ sim (um `code` novo por request) |
 | 6. /userinfo sem token ou expirado | ✅ sim (14b: token com mais de 15 min) |
-| 7. Aplicação cliente | ⏳ depois das issues do cliente (#14–#23) |
+| 7. Aplicação cliente | ✅ sim |
 
-Requests que dependem de algo ainda inexistente **são pulados automaticamente** (aparecem como `PULADO` no console e nos resultados, sem falhar).
+Requests cujo pré-requisito ainda não foi obtido (ex.: `code`, `access_token`) **são pulados automaticamente** (aparecem como `PULADO` no console e nos resultados, sem falhar).
 
 ---
 
@@ -90,12 +90,12 @@ Este caminho não alimenta as variáveis da coleção; para os testes negativos 
 
 | # | Cenário | Onde testar | Resultado esperado |
 |---|---|---|---|
-| 1–7, 12 | ID Token forjado (`alg=none`, HS256, `aud`, `iss`, `exp`, `iat`, `nonce`, assinatura) | **Validação no cliente** — testes JUnit do `client-app` (issue #19). O Postman não valida ID Token como cliente. | Rejeitado |
-| 8 | Callback com `state` divergente/ausente | Pasta **7** (após o cliente) | Fluxo abortado, sem sessão |
+| 1–7, 12 | ID Token forjado (`alg=none`, HS256, `aud`, `iss`, `exp`, `iat`, `nonce`, assinatura) | **Validação no cliente** — `./mvnw -pl client-app test -Dtest=NegativeIdTokenTests`. O Postman não valida ID Token como cliente. | Rejeitado |
+| 8 | Callback com `state` divergente/ausente | Pasta **7** | Fluxo abortado, sem sessão |
 | 9 | Reutilização do code | Pasta **3**, passos 6 e 7 | `invalid_grant` + `/userinfo` 401 |
 | 10 | `code_verifier` incorreto | Pasta **5**, passo 2 | `invalid_grant` |
 | 11 | redirect_uri com barra final, parâmetro extra, subcaminho | Pasta **2** (#11a, #11b, #11c) | 400 na página, sem `Location` |
-| 13 | `/admin` com `role=user` | Navegador, após o cliente (#22) | 403 |
+| 13 | `/admin` com `role=user` | Navegador: entre como `aluno` e abra https://localhost:8443/admin | 403 |
 | 14 | `/userinfo` sem token / expirado | Pasta **6** | 401 + `WWW-Authenticate: Bearer` |
 | 15 | Força bruta no login | Navegador: no formulário de login, 5 senhas erradas seguidas e depois a correta | 429 "Muitas tentativas" |
 
@@ -109,6 +109,8 @@ OIDC_SERVER_ACCESSTOKENTTL=30s ./mvnw -pl authorization-server spring-boot:run
 Faça o fluxo (pasta 3, só o passo 1), espere 30 s e rode **6 › Negativo #14b**.
 
 ## 6. Gerar evidências para o relatório
+
+- **Tudo de uma vez (recomendado):** com os dois apps no ar, rode `./collections/negative-tests.sh`. Ele executa os 15 cenários do §5 (simulando o navegador com curl) e salva a tabela em `evidencias/`.
 
 - **No Postman:** botão direito na coleção ou pasta → **Run** → *Run* → ao final, **Export Results** (JSON) e tire um print da tela de resultados.
 - **Pela linha de comando** (Newman, opcional; precisa de Node.js só como ferramenta de teste):
