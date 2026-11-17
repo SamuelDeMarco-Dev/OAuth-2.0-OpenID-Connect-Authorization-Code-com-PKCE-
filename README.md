@@ -2,6 +2,8 @@
 
 Avaliação A1/3 — 33506 Cyber Security (Unoesc) · **Opção 1: Servidor de Autorização próprio**.
 
+**Grupo:** Samuel De Marco · Igor Zampieri · Gustavo Peretto
+
 Dois componentes independentes que implementam, sem bibliotecas prontas de OAuth, o fluxo Authorization Code (RFC 6749) com PKCE S256 (RFC 7636) e a camada de identidade do OpenID Connect Core 1.0:
 
 | Componente | Papel | URL |
@@ -144,7 +146,7 @@ scripts/                geração dos segredos de desenvolvimento
 .claude/                subagentes e permissões do Claude Code
 ```
 
-## Fluxo de trabalho da dupla
+## Fluxo de trabalho do grupo
 1. Pegue uma issue do [board](../../issues) (milestone *Entrega A1/3*).
 2. `git switch -c feat/<nº>-descricao` a partir da `main` atualizada.
 3. Commits pequenos referenciando a issue: `feat(as): valida redirect_uri exata (#7)`.

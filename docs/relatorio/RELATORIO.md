@@ -1,7 +1,7 @@
 # Relatório — A1/3 Cyber Security (33506)
 ## Autenticação e Autorização: OAuth 2.0 + OpenID Connect (Authorization Code com PKCE) — Opção 1
 
-**Acadêmicos:** Samuel De Marco · _[nome do colega]_  ·  **Professor:** Odemir Moreira da Mata Junior  ·  **Entrega:** 26/11/2026
+**Acadêmicos:** Samuel De Marco · Igor Zampieri · Gustavo Peretto  ·  **Professor:** Odemir Moreira da Mata Junior  ·  **Entrega:** 26/11/2026
 
 **Repositório:** https://github.com/SamuelDeMarco-Dev/OAuth-2.0-OpenID-Connect-Authorization-Code-com-PKCE-
 
