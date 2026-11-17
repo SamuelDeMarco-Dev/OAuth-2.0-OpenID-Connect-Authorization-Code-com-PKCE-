@@ -1,6 +1,7 @@
 # Roteiro da demonstração ao vivo (≤ 10 min)
 
-**Formato:** dois apresentadores — **A** conduz o Servidor de Autorização, **B** conduz a aplicação cliente. Quem não está com o teclado narra.
+**Formato:** três apresentadores (Samuel De Marco, Igor Zampieri e Gustavo Peretto — definam quem é A, B e C):
+**A** apresenta a arquitetura e o Servidor de Autorização, **B** conduz o login e a aplicação cliente, **C** executa e comenta os testes negativos. Quem não está com o teclado narra.
 
 ## Antes de entrar na sala (checklist)
 - [ ] `git pull` e `./mvnw -B verify` passando
@@ -21,10 +22,10 @@
 | 2:00–4:00 | B | `https://localhost:8443` → **Entrar** → login `admin` → consentimento → volta logado | Antes do redirect o cliente gerou `state`, `nonce` e `code_verifier` de 256 bits. Mostrar a URL do `/authorize` na barra (só o `code_challenge` sai do servidor). No retorno, o `state` é conferido antes de qualquer coisa. |
 | 4:00–5:30 | B | Log do cliente: bloco `[ID_TOKEN]` e as linhas `#1`…`#10` | As três partes do ID Token decodificadas; cada linha é um item do checklist 4.3; o algoritmo vem da lista fixa `[RS256]`, nunca do header; `sub` do `/userinfo` igual ao do ID Token; vínculo por `iss`+`sub`. |
 | 5:30–6:30 | B | **Meu perfil** (tabela `users`) → **Sair** → entrar como `aluno` → **Área administrativa** → 403 | Sessão própria `APP_SID` (HttpOnly, Secure, SameSite=Lax, 256 bits, rotacionada no login); a role é lida do servidor a cada requisição — o link aparece para todos de propósito. |
-| 6:30–9:00 | A | Terminal: `./collections/negative-tests.sh` | Os 15 cenários do §5 contra os apps reais. Comentar enquanto roda: #8 aborta antes da troca, #9 revoga os tokens, #11 nem redireciona, #15 bloqueia até a senha correta. Terminar mostrando a tabela **20 OK, 0 falhas**. |
-| 9:00–10:00 | A e B | Perguntas | — |
+| 6:30–9:00 | C | Terminal: `./collections/negative-tests.sh` | Os 15 cenários do §5 contra os apps reais. Comentar enquanto roda: #8 aborta antes da troca, #9 revoga os tokens, #11 nem redireciona, #15 bloqueia até a senha correta. Terminar mostrando a tabela **20 OK, 0 falhas**. |
+| 9:00–10:00 | A, B e C | Perguntas | — |
 
-> O script leva cerca de 30–60 s (inclui os testes JUnit do ID Token). Se o tempo apertar, rode-o **antes** da sessão de perguntas enquanto B fala do item 4:00–5:30.
+> O script leva cerca de 30–60 s (inclui os testes JUnit do ID Token). Se o tempo apertar, C pode iniciá-lo enquanto B ainda fala do item 4:00–5:30.
 
 ## Perguntas prováveis (respostas curtas)
 - **Por que RS256 e não HS256?** Com HS256 o cliente teria o mesmo segredo que assina: poderia forjar tokens, e o segredo teria de ser distribuído. Com RS256 o cliente só tem a chave pública (JWKS). O ataque de “reassinar em HS256 com a chave pública” é o teste #2 e é recusado porque o algoritmo vem da lista fixa.
