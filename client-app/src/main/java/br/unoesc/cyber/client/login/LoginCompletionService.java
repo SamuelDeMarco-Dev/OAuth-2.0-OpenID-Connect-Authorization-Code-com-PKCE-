@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Service;
 
 import br.unoesc.cyber.client.session.SessionService;
+import br.unoesc.cyber.client.token.IdTokenInspector;
 import br.unoesc.cyber.client.token.IdTokenValidator;
 import br.unoesc.cyber.client.token.TokenClient;
 import br.unoesc.cyber.client.token.TokenSet;
@@ -21,13 +22,15 @@ import br.unoesc.cyber.client.user.UserLinkService;
 class LoginCompletionService {
 
     private final TokenClient tokenClient;
+    private final IdTokenInspector inspector;
     private final IdTokenValidator validator;
     private final UserLinkService userLink;
     private final SessionService sessions;
 
-    LoginCompletionService(TokenClient tokenClient, IdTokenValidator validator, UserLinkService userLink,
-            SessionService sessions) {
+    LoginCompletionService(TokenClient tokenClient, IdTokenInspector inspector, IdTokenValidator validator,
+            UserLinkService userLink, SessionService sessions) {
         this.tokenClient = tokenClient;
+        this.inspector = inspector;
         this.validator = validator;
         this.userLink = userLink;
         this.sessions = sessions;
@@ -37,7 +40,8 @@ class LoginCompletionService {
         // Passo 6: troca do code (uma tentativa, com timeout)
         TokenSet tokens = tokenClient.exchange(code, pre.codeVerifier());
 
-        // Passo 7 (issue #17): decompor o ID Token e registrar no log header, payload e assinatura.
+        // Passo 7: decompor o ID Token e registrar no log header, payload e assinatura
+        inspector.decompose(tokens.idToken());
 
         // Passo 8: checklist 4.3 itens 1–8 (lista fixa de algoritmos, JWKS pelo kid, iss, aud, azp, exp, iat, nonce)
         ValidatedIdToken idToken = validator.validate(tokens.idToken(), pre.nonce());
