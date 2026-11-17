@@ -30,6 +30,7 @@ import br.unoesc.cyber.client.token.IdTokenValidator;
 import br.unoesc.cyber.client.token.TokenClient;
 import br.unoesc.cyber.client.token.TokenExchangeException;
 import br.unoesc.cyber.client.token.TokenSet;
+import br.unoesc.cyber.client.token.UserInfoClient;
 import br.unoesc.cyber.client.token.ValidatedIdToken;
 
 class CallbackControllerTest extends AbstractIntegrationTest {
@@ -40,6 +41,8 @@ class CallbackControllerTest extends AbstractIntegrationTest {
     TokenClient tokenClient;
     @MockitoBean
     IdTokenValidator validator;
+    @MockitoBean
+    UserInfoClient userInfo;
 
     static MockHttpSession preLogin() {
         MockHttpSession session = new MockHttpSession();
@@ -101,6 +104,7 @@ class CallbackControllerTest extends AbstractIntegrationTest {
                 .andExpect(redirectedUrl("/")).andReturn();
 
         verify(validator).validate(eq("idt"), eq("nonce-ok"));
+        verify(userInfo).fetchAndCheck(eq("at"), eq(sub));
         String cookies = String.join(";", r.getResponse().getHeaders(HttpHeaders.SET_COOKIE));
         assertThat(cookies).contains("APP_SID=").contains("HttpOnly").contains("Secure").contains("SameSite=Lax");
         assertThat(r.getResponse().getContentAsString()).doesNotContain("idt").doesNotContain("\"at\"");
@@ -110,6 +114,17 @@ class CallbackControllerTest extends AbstractIntegrationTest {
     void idTokenRejeitadoNaoCriaSessao() throws Exception {
         when(tokenClient.exchange(anyString(), anyString())).thenReturn(new TokenSet("at", "idt", null, 900));
         when(validator.validate(anyString(), any())).thenThrow(new IdTokenValidationException(8, "nonce diferente"));
+        noSession(mvc.perform(get("/callback").session(preLogin()).param("code", "c").param("state", "state-ok"))
+                .andExpect(status().isBadRequest()).andReturn());
+    }
+
+    @Test
+    void subDoUserinfoDiferenteNaoCriaSessao() throws Exception {
+        String sub = UUID.randomUUID().toString();
+        when(tokenClient.exchange(anyString(), anyString())).thenReturn(new TokenSet("at", "idt", null, 900));
+        when(validator.validate(anyString(), any())).thenReturn(new ValidatedIdToken("https://as.test.example", sub,
+                "X", null, false, "user", List.of()));
+        when(userInfo.fetchAndCheck(anyString(), anyString())).thenThrow(new IdTokenValidationException(10, "sub difere"));
         noSession(mvc.perform(get("/callback").session(preLogin()).param("code", "c").param("state", "state-ok"))
                 .andExpect(status().isBadRequest()).andReturn());
     }

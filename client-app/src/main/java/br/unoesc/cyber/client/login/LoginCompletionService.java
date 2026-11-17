@@ -10,6 +10,7 @@ import br.unoesc.cyber.client.token.IdTokenInspector;
 import br.unoesc.cyber.client.token.IdTokenValidator;
 import br.unoesc.cyber.client.token.TokenClient;
 import br.unoesc.cyber.client.token.TokenSet;
+import br.unoesc.cyber.client.token.UserInfoClient;
 import br.unoesc.cyber.client.token.ValidatedIdToken;
 import br.unoesc.cyber.client.user.UserAccount;
 import br.unoesc.cyber.client.user.UserLinkService;
@@ -24,14 +25,16 @@ class LoginCompletionService {
     private final TokenClient tokenClient;
     private final IdTokenInspector inspector;
     private final IdTokenValidator validator;
+    private final UserInfoClient userInfo;
     private final UserLinkService userLink;
     private final SessionService sessions;
 
     LoginCompletionService(TokenClient tokenClient, IdTokenInspector inspector, IdTokenValidator validator,
-            UserLinkService userLink, SessionService sessions) {
+            UserInfoClient userInfo, UserLinkService userLink, SessionService sessions) {
         this.tokenClient = tokenClient;
         this.inspector = inspector;
         this.validator = validator;
+        this.userInfo = userInfo;
         this.userLink = userLink;
         this.sessions = sessions;
     }
@@ -46,7 +49,8 @@ class LoginCompletionService {
         // Passo 8: checklist 4.3 itens 1–8 (lista fixa de algoritmos, JWKS pelo kid, iss, aud, azp, exp, iat, nonce)
         ValidatedIdToken idToken = validator.validate(tokens.idToken(), pre.nonce());
 
-        // Checklist 4.3 item 10 (issue #23): GET /userinfo com o access token e exigir sub == idToken.sub().
+        // Checklist 4.3 item 10: /userinfo com o access token deve devolver o mesmo sub
+        userInfo.fetchAndCheck(tokens.accessToken(), idToken.sub());
 
         // Passos 9–10: sub validado → id interno (vínculo iss + sub)
         UserAccount user = userLink.link(idToken);
