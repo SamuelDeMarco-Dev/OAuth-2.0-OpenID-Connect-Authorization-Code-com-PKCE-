@@ -19,6 +19,8 @@
     <div th:if="${user}">
         <p>Olá, <strong th:text="${user.fullName}">usuário</strong>
             (<span th:text="${user.userName}">user_name</span>) — perfil <code th:text="${user.role}">role</code>.</p>
+        <p><a th:href="@{/perfil}">Meu perfil</a> · <a th:href="@{/admin}">Área administrativa</a>
+            <span class="muted">(somente admin — o controle é feito no servidor)</span></p>
         <form method="post" th:action="@{/logout}"><button class="button" type="submit">Sair</button></form>
     </div>
     <div th:unless="${user}">
